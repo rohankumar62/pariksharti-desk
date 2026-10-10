@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: preparation-desk
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+      accept-float-as-int: false
+server:
+  port: ${PORT:8080}
+  servlet:
+    session:
+      timeout: 2h
+      cookie:
+        name: DESKSESSION
+        http-only: true
+        same-site: lax
+        secure: ${COOKIE_SECURE:false}
+  error:
+    include-message: never
+    include-stacktrace: never
+  tomcat:
+    max-http-form-post-size: 64KB
+    threads:
+      max: 30
+      min-spare: 3
+app:
+  registration-enabled: ${APP_REGISTRATION_ENABLED:true}
+  signup-code: ${APP_SIGNUP_CODE:}
+  require-invite: false

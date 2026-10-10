@@ -1,0 +1,14 @@
+**/node_modules/
+**/dist/
+**/target/
+**/data/
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+**/*.tsbuildinfo
+.idea/
+.DS_Store
+Thumbs.db
+.vscode/*.local.json
+backend/src/main/resources/static/

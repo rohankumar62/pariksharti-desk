@@ -1,0 +1,22 @@
+# Optional Blueprint; manual dashboard steps are in docs/03-FREE-DEPLOYMENT-HINDI.md.
+services:
+  - type: web
+    name: pariksharti-desk
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: APP_SIGNUP_CODE
+        generateValue: true
+      - key: APP_REGISTRATION_ENABLED
+        value: "true"

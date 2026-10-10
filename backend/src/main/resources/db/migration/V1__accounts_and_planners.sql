@@ -1,0 +1,14 @@
+CREATE TABLE accounts (
+  id VARCHAR(36) PRIMARY KEY,
+  email VARCHAR(254) NOT NULL UNIQUE,
+  password_hash VARCHAR(100) NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  city VARCHAR(80) NOT NULL,
+  bio VARCHAR(500) NOT NULL,
+  target_year INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+CREATE TABLE planners (
+  user_id VARCHAR(36) PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+  state_json TEXT NOT NULL
+);

@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {"label": "Backend: run locally", "type": "shell", "command": "./mvnw spring-boot:run", "windows": {"command": ".\\mvnw.cmd spring-boot:run"}, "options": {"cwd": "${workspaceFolder}/backend"}, "problemMatcher": []},
+    {"label": "Frontend: run locally", "type": "shell", "command": "npm run dev", "options": {"cwd": "${workspaceFolder}/frontend"}, "problemMatcher": []},
+    {"label": "Backend: test", "type": "shell", "command": "./mvnw test", "windows": {"command": ".\\mvnw.cmd test"}, "options": {"cwd": "${workspaceFolder}/backend"}, "problemMatcher": []}
+  ]
+}
