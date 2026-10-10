@@ -30,7 +30,7 @@ Login authenticates through Spring Security, rotates the session ID and CSRF tok
 
 The frontend gets a CSRF token from `/api/auth/csrf` and sends its header on state-changing requests, including register/login/logout. After login it discards the previous token and gets a fresh one. Server sessions are in memory and expire after two idle hours or a process restart. Data lives separately in the database.
 
-Eight failed attempts for a given normalized email within fifteen minutes trigger a temporary limit. That limit is in memory and resets on restart. Production signup requires a private invitation code; turn off registrations through `APP_REGISTRATION_ENABLED=false` if only existing users should log in.
+Eight failed attempts for a given normalized email within fifteen minutes trigger a temporary limit. That limit is in memory and resets on restart. Signup is open by default, without an invitation code; turn off registrations through `APP_REGISTRATION_ENABLED=false` if only existing users should log in.
 
 ## API
 
@@ -39,7 +39,7 @@ Eight failed attempts for a given normalized email within fifteen minutes trigge
 | GET | `/api/health` | Public process health |
 | GET | `/api/auth/config` | Public registration/invitation-required flags |
 | GET | `/api/auth/csrf` | Public CSRF token for this browser session |
-| POST | `/api/auth/register` | CSRF + invitation in production; create account |
+| POST | `/api/auth/register` | CSRF; create account |
 | POST | `/api/auth/login` | CSRF; authenticate and rotate session |
 | POST | `/api/auth/logout` | CSRF; invalidate session; 204 response |
 | GET | `/api/auth/me` | Current signed-in profile |

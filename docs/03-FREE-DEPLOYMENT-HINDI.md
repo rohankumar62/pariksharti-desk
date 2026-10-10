@@ -2,7 +2,7 @@
 
 Yeh guide Windows aur VS Code ke beginner user ke liye hai. Ismein pehle GitHub par code rakhna, phir free database banana, phir Render par app deploy karna, aur ant mein online app check karna bataya gaya hai.
 
-> **Important:** App ko internet par sach mein publish karne ke liye aapke apne GitHub, Neon aur Render accounts chahiye. Account password, database password ya invitation code kisi ko chat mein mat bhejein. Sirf free plans choose karein; provider ke terms/limits badal sakte hain.
+> **Important:** App ko internet par sach mein publish karne ke liye aapke apne GitHub, Neon aur Render accounts chahiye. Account password ya database password kisi ko chat mein mat bhejein. Sirf free plans choose karein; provider ke terms/limits badal sakte hain.
 
 ## Aapko kya milega?
 
@@ -96,17 +96,35 @@ GitHub repository page refresh karein. Uske main page par `backend`, `frontend`,
 1. Neon website par account banayein/sign in karein.
 2. **New project** dabayein; project ka naam `pariksharti-desk` rakh sakte hain.
 3. **Free** plan choose karein. Region pooche to baad mein Render ke region ke paas wala chunein.
-4. Project banne ke baad **Connect** ya **Connection details** kholein.
-5. **Direct connection** chunein—pooler nahi. Host mein `-pooler` nahi hona chahiye. Host, database name, username aur password ko safe jagah par note karein.
-6. JDBC URL is format mein hoga:
+4. Project banne ke baad **Connect** dabayein. Aapko **Connect to your branch** panel dikhega. Is panel mein branch `production`, database `neondb` aur role `neondb_owner` dikh sakte hain—yeh theek hai.
+5. Connection options mein **Connection pooling** ka toggle/dropdown dekhein. Use **off / Direct connection** karein. Phir connection string dobara copy karein. Direct host mein `-pooler` nahi hota. Host, database, role aur password ko alag-alag pehchanein; password ko safe jagah par rakhein.
+6. Aapki connection-string line aam taur par is format ki hogi (neeche ke capital placeholder asli values nahi hain):
 
 ```text
-jdbc:postgresql://NEON_HOST/DATABASE_NAME?sslmode=verify-full&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory
+postgresql://ROLE:PASSWORD@DIRECT_HOST/DATABASE?sslmode=require
 ```
 
-`NEON_HOST` aur `DATABASE_NAME` ko Neon ki asli values se replace karein. Username/password is URL mein mat daalein; Render mein unke alag fields hain. Aksar database name `neondb` hota hai—apne Neon dashboard mein verify karein. Is URL ko sirf Render ke Environment settings mein paste karein.
+Ismein `@` ke baad aur agle `/` se pehle wala hissa **host** hai; `/` ke baad wala hissa **database** hai. Neon ke panel mein database `neondb` aur role `neondb_owner` dikh rahe hon to Render mein bhi yehi values use karein. **Pooled string** ke host mein `-pooler` aa sakta hai—use yahan direct host ke roop mein mat daalein. Direct option nahi mil raha ho to Connect panel ke connection type/pooling control ko dekhein; host ko khud se guess karke edit na karein.
 
-> Neon ka normal URL `postgresql://...` se shuru ho sakta hai. Is app ko `jdbc:postgresql://...` wala URL chahiye. Password ko URL mein jodne ki zaroorat nahi hai.
+7. **URL ko poora copy karke Render mein mat daalein.** Neon ki direct connection string mein se sirf host copy karke Render ka `DB_URL` banayein:
+
+	- Neon ki string mein `@` ke baad aur uske baad aane wale `/` se pehle jo text hai, wahi **host** hai. Us host ko copy karein. Usmein `-pooler` nahi hona chahiye.
+	- Neeche ke URL mein `DIRECT_HOST` ko apne copied host se replace karein. Baaki text jaisa hai waisa hi rehne dein:
+
+	```text
+	jdbc:postgresql://DIRECT_HOST/neondb?sslmode=verify-full&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory
+	```
+
+	- Is URL mein `postgresql://` ke aage sirf `jdbc:` add hua hai. Username aur password URL mein **nahi** hain. `neondb` aapka database name hai.
+	- Render → **Environment** mein teen alag boxes mein yeh daalein:
+
+| Render key | Neon se kaunsi value |
+|---|---|
+| `DB_URL` | Upar banaya JDBC URL (ismein password nahi hota) |
+| `DB_USERNAME` | Role, aapke panel mein `neondb_owner` |
+| `DB_PASSWORD` | Neon ka **naya/reset kiya hua** role password |
+
+Password ko URL mein mat jodein. Agar host pehchanna ya URL banana ab bhi mushkil ho, Neon ke Connect panel mein pooling off karke nayi direct connection string copy karein; us poori string ko chat mein bhejne ke bajaye usmein se sirf host wala hissa dekhein. **Connection string mein password hota hai.** Agar woh pehle chat/public jagah par share hua hai, Neon mein **Role → Reset password** karke naya password banayein aur Render ke `DB_PASSWORD` mein wahi naya password daalein.
 
 ## Hissa 3 — Render par website/API deploy karein
 
@@ -141,18 +159,9 @@ Service create karne se pehle **Environment** section kholein. **Add Environment
 | `DB_URL` | Hissa 2 wala JDBC URL, asli Neon host/database ke saath |
 | `DB_USERNAME` | Neon ka username/role |
 | `DB_PASSWORD` | Neon ka database password |
-| `APP_SIGNUP_CODE` | Apna private random invitation code, kam se kam 16 characters |
 | `APP_REGISTRATION_ENABLED` | `true` |
 
-Invitation code banane ke liye VS Code ke Terminal mein yeh command chala sakte hain:
-
-```powershell
-node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
-```
-
-Jo lambi value print ho, use `APP_SIGNUP_CODE` ke value mein paste karein. Ise kisi ke saath share ya GitHub par commit na karein. Account banane ke waqt yahi code app ke invitation field mein daalna hoga.
-
-Database username/password aur invitation code **sirf Render ke Environment page** mein daalein—source file, GitHub ya chat mein nahi. Key names mein spelling/uppercase bilkul same rakhein.
+Signup ke liye invitation code ki zaroorat nahi hai. Har user **Create account** par apna naam, email aur password dekar account bana sakta hai. Database username/password **sirf Render ke Environment page** mein daalein—source file, GitHub ya chat mein nahi. Key names mein spelling/uppercase bilkul same rakhein.
 
 ### 3. Deploy shuru karein
 
@@ -172,7 +181,7 @@ Build fail ho to Logs ka error dekhein. Sabse aam galtiyan: galat GitHub root, D
 {"status":"ok"}
 ```
 
-3. Website par **Create account** karein. Registration form mein Render ke `APP_SIGNUP_CODE` wala invitation code daalein.
+3. Website par **Create account** karein. Apna naam, email aur password daalein; invitation code nahi maanga jayega.
 4. Sign in karke profile ka naam/city save karein, ek planner topic update karein, aur page reload karke dekhein ki data bana hua hai.
 5. Sign out karke dobara sign in karein. Profile aur progress wapas dikhni chahiye. Yeh confirm karega ki data Neon database mein save hua hai.
 
@@ -184,7 +193,7 @@ Build fail ho to Logs ka error dekhein. Sabse aam galtiyan: galat GitHub root, D
 | `DB_URL`/database config missing | Render → service → Environment mein `SPRING_PROFILES_ACTIVE=prod` aur teeno `DB_...` values check karein. Save ke baad redeploy karein. |
 | Database login/authentication failure | Neon ka username/password dobara copy karein. URL ka host direct host ho, `-pooler` wala nahi; password URL mein nahi hona chahiye. |
 | SSL/certificate error | JDBC URL mein `sslmode=verify-full` aur `sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory` dono maujood hon. |
-| Registration par invitation error | Signup form mein wahi code daalein jo Render ke `APP_SIGNUP_CODE` mein saved hai—extra space na ho. |
+| Registration band hone ka error | Render → service → Environment mein `APP_REGISTRATION_ENABLED=true` set karein, phir redeploy karein. |
 | App khulne mein bahut time le / pehla request timeout ho | Free Render service idle hone par sleep karti hai. Ek minute dein, phir refresh karein aur Render Logs dekhein. |
 | Website ke bajaye 404 ya 502 | Render service **Live** hai ya nahi dekhein; deploy/build logs check karein; service URL ke saath `/api/health` kholein. |
 | Render service suspend/build limit error | Render aur Neon dashboard mein free usage/limits check karein. Paid upgrade zaroori nahi—quota reset hone tak ruk sakte hain. |
@@ -196,6 +205,6 @@ Build fail ho to Logs ka error dekhein. Sabse aam galtiyan: galat GitHub root, D
 - Is app ka login session restart/sleep ke baad khatam ho sakta hai; dobara sign in karein. Profile/progress PostgreSQL mein saved rehna chahiye.
 - Local computer par bane accounts cloud database mein automatically copy nahi honge; online app par naya account banayein.
 - Password bhoolne par email reset flow is app mein nahi hai. Apna password safe jagah par rakhein.
-- Database credentials aur invitation code private rakhein. Agar galti se GitHub par upload ho gaye hon, turant rotate/change karein.
+- Database credentials private rakhein. Agar galti se GitHub par upload ho gaye hon, turant rotate/change karein.
 
 **Bas!** Agar health URL `{"status":"ok"}` dikhata hai, website khul rahi hai, aur account bana kar data save/reload ho raha hai, to deployment complete hai.

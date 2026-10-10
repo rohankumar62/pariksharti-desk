@@ -25,6 +25,7 @@ public class AccountService {
     private final PlannerService state;
     private final PasswordEncoder encoder;
     private final boolean registrationEnabled;
+    private final boolean inviteRequired;
     private final String signupCode;
 
     public AccountService(AccountRepository accounts, PlannerRepository planners, PlannerService state,
@@ -37,18 +38,19 @@ public class AccountService {
         this.state = state;
         this.encoder = encoder;
         registrationEnabled = enabled;
+        inviteRequired = requireInvite;
         signupCode = code;
         if (enabled && (code.length() > 200 || requireInvite && code.length() < 16))
             throw new IllegalStateException("Set APP_SIGNUP_CODE to 16–200 characters before enabling production registration.");
     }
 
     public boolean registrationEnabled() { return registrationEnabled; }
-    public boolean inviteRequired() { return !signupCode.isEmpty(); }
+    public boolean inviteRequired() { return inviteRequired; }
 
     @Transactional
     public ProfileResponse register(RegisterRequest input) {
         if (!registrationEnabled) throw new ApiException(403, "REGISTRATION_CLOSED", "New registrations are currently closed.");
-        if (!signupCode.isEmpty() && !MessageDigest.isEqual(signupCode.getBytes(StandardCharsets.UTF_8),
+        if (inviteRequired && !MessageDigest.isEqual(signupCode.getBytes(StandardCharsets.UTF_8),
                 (input.inviteCode() == null ? "" : input.inviteCode()).getBytes(StandardCharsets.UTF_8)))
             throw new ApiException(403, "INVITE_REQUIRED", "Enter a valid invitation code.");
         if (input.password().length() < 10 || input.password().getBytes(StandardCharsets.UTF_8).length > 72)

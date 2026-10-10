@@ -15,4 +15,4 @@ server:
       cookie:
         secure: true
 app:
-  require-invite: true
+  require-invite: false

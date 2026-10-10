@@ -16,7 +16,5 @@ services:
         sync: false
       - key: DB_PASSWORD
         sync: false
-      - key: APP_SIGNUP_CODE
-        generateValue: true
       - key: APP_REGISTRATION_ENABLED
         value: "true"
