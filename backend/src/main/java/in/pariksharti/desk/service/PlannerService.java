@@ -47,6 +47,11 @@ public class PlannerService {
     @Transactional(readOnly = true)
     public JsonNode read(String userId) { return parse(record(userId).getStateJson()); }
 
+    @Transactional
+    public void setMedium(String userId, String medium) {
+        patch(userId, "settings", json.createObjectNode().put("language", medium));
+    }
+
     private PlannerRecord record(String id) {
         return repository.findById(id).orElseThrow(() -> new ApiException(404, "PLANNER_MISSING", "Your planner was not found."));
     }

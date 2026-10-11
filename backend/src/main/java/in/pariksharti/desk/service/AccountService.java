@@ -29,10 +29,10 @@ public class AccountService {
     private final String signupCode;
 
     public AccountService(AccountRepository accounts, PlannerRepository planners, PlannerService state,
-            PasswordEncoder encoder,
-            @Value("${app.registration-enabled}") boolean enabled,
-            @Value("${app.signup-code}") String code,
-            @Value("${app.require-invite}") boolean requireInvite) {
+                          PasswordEncoder encoder,
+                          @Value("${app.registration-enabled}") boolean enabled,
+                          @Value("${app.signup-code}") String code,
+                          @Value("${app.require-invite}") boolean requireInvite) {
         this.accounts = accounts;
         this.planners = planners;
         this.state = state;
@@ -64,7 +64,14 @@ public class AccountService {
         return account.toProfileResponse();
     }
 
-    public ProfileResponse profile(String id) { return account(id).toProfileResponse(); }
+    public ProfileResponse profile(String id) {
+        return profileWithMedium(account(id));
+    }
+
+    private ProfileResponse profileWithMedium(Account account) {
+        String medium = state.read(account.getId()).path("settings").path("language").asText("en");
+        return account.toProfileResponse().withMedium(medium);
+    }
 
     private Account account(String id) {
         return accounts.findById(id).orElseThrow(() -> new ApiException(401, "AUTH_REQUIRED", "Please sign in again."));
@@ -78,7 +85,8 @@ public class AccountService {
             throw ApiException.invalid("Choose a target year within the next 10 years.");
         account.updateProfile(clean(input.fullName(), 100, false), clean(input.city(), 80, true),
                 clean(input.bio(), 500, true), input.targetYear());
-        return account.toProfileResponse();
+        if (input.medium() != null) state.setMedium(id, input.medium());
+        return profileWithMedium(account);
     }
 
     private static String clean(String value, int max, boolean emptyAllowed) {
