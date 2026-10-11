@@ -29,6 +29,9 @@ class AccountServiceTest {
     void setUp() {
         service = new AccountService(accounts, planners, state, encoder, true, "", false);
         when(state.initialJson()).thenReturn("{}");
+        var saved = new com.fasterxml.jackson.databind.ObjectMapper().createObjectNode();
+        saved.putObject("settings").put("language", "en");
+        when(state.read(any())).thenReturn(saved);
         when(encoder.encode(any())).thenReturn("encoded-password");
     }
 
