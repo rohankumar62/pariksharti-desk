@@ -35,9 +35,12 @@ function SignIn({access, onLogin}: {access: Access; onLogin: (user: Profile, isN
     setBusy(true);
     try {
       if (register) await api('/api/auth/register', 'POST', {fullName: form.fullName, email: form.email.trim(), password: form.password, inviteCode: form.inviteCode});
-      const user = await api<Profile>('/api/auth/login', 'POST', {email: form.email.trim(), password: form.password});
+      let user = await api<Profile>('/api/auth/login', 'POST', {email: form.email.trim(), password: form.password});
       resetCsrf();
-      if (register) await api('/api/planner', 'PATCH', {field: 'settings', patch: {language}});
+      if (register) {
+        await api('/api/planner', 'PATCH', {field: 'settings', patch: {language}});
+        user = await api<Profile>('/api/auth/me');
+      }
       onLogin(user, register);
     } catch (e) { setError(message(e, language)); } finally { setBusy(false); }
   }
@@ -66,13 +69,13 @@ function SignIn({access, onLogin}: {access: Access; onLogin: (user: Profile, isN
 
 function ProfileSheet({user, open, onClose, onSave}: {user: Profile; open: boolean; onClose: () => void; onSave: (user: Profile) => void}) {
   const [draft, setDraft] = useState(user), [busy, setBusy] = useState(false), [error, setError] = useState('');
-  const language: Language = document.documentElement.lang === 'hi' ? 'hi' : 'en';
+  const language: Language = user.medium === 'hi' ? 'hi' : 'en';
   const text = (en: string, hi: string) => language === 'hi' ? hi : en;
   useEffect(() => { if (open) {setDraft(user); setError('');} }, [open, user]);
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError('');
     try {
-      const updated = await api<Profile>('/api/profile', 'PUT', {fullName: draft.fullName, city: draft.city, bio: draft.bio, targetYear: draft.targetYear});
+      const updated = await api<Profile>('/api/profile', 'PUT', {fullName: draft.fullName, city: draft.city, bio: draft.bio, targetYear: draft.targetYear, medium: draft.medium});
       onSave(updated); toast.success(text('Profile saved', 'प्रोफाइल सेव हो गई')); onClose();
     } catch (e) {setError(message(e, language));} finally {setBusy(false);}
   }
@@ -83,6 +86,7 @@ function ProfileSheet({user, open, onClose, onSave}: {user: Profile; open: boole
       <label>{text('Email', 'ईमेल')}<Input readOnly type="email" value={user.email}/><small>{text('Your sign-in email.', 'इस ईमेल से साइन इन करें।')}</small></label>
       <label>{text('City (optional)', 'शहर (वैकल्पिक)')}<Input maxLength={80} autoComplete="address-level2" value={draft.city} onChange={e => setDraft({...draft, city: e.target.value})}/></label>
       <label>{text('Target attempt', 'लक्षित प्रयास')}<select value={draft.targetYear ?? ''} onChange={e => setDraft({...draft, targetYear: e.target.value ? Number(e.target.value) : null})}><option value="">{text('Not decided yet', 'अभी तय नहीं किया')}</option>{Array.from({length: 11}, (_, n) => year + n).map(y => <option key={y} value={y}>{y}</option>)}</select></label>
+      <label>{text('Preparation medium', 'तैयारी का माध्यम')}<select disabled={busy} value={draft.medium} onChange={e => setDraft({...draft, medium: e.target.value as Language})}><option value="en">English</option><option value="hi">हिन्दी</option></select><small>{text('Save to apply this language. Your choice stays until you change it here.', 'सेव करने पर यह भाषा लागू होगी। यहाँ बदलने तक आपका चयन बना रहेगा।')}</small></label>
       <label>{text('About your preparation (optional)', 'अपनी तैयारी के बारे में (वैकल्पिक)')}<textarea rows={4} maxLength={500} value={draft.bio} placeholder={text('Your motivation, current stage or study goal…', 'आपकी प्रेरणा, तैयारी का स्तर या अध्ययन लक्ष्य…')} onChange={e => setDraft({...draft, bio: e.target.value})}/><small>{draft.bio.length}/500</small></label>
       {error && <div className="account-error" role="alert">{error}</div>}<Button disabled={busy} type="submit">{busy && <LoaderCircle className="animate-spin"/>}{text('Save profile', 'प्रोफाइल सेव करें')}</Button>
     </form></SheetContent></Sheet>;
